@@ -5,7 +5,7 @@ window.onload = () => {
   //tests
   defaultItems();
   showProjects();
-  addTasksListener();
+  showListener();
 };
 
 //initialize projects
@@ -22,14 +22,15 @@ function showProjects() {
       <button id="showTask">Show tasks</button>
       <button id="addTask">Add task</button>
       <button id="deleteProject">Delete project</button>
-      <div id="taskList${i}"></div>
+      <div id="taskList${i}"><div id="addTaskForm"></div></div>
     </div>  
   `;
   }
+  addTaskListener();
 }
 
 //showTasks event listener
-function addTasksListener() {
+function showListener() {
   document.querySelectorAll("#showTask").forEach((el) => {
     el.addEventListener("click", function (e) {
       //console.log(e.target.parentNode);
@@ -43,26 +44,72 @@ function addTasksListener() {
         showTasks(eventIndex, taskListSelector);
       }
     });
+  });
+}
 
-    function deleteListener(eventIndex, taskListSelector) {
-      document.querySelectorAll("#deleteTask").forEach((el) => {
-        el.addEventListener("click", function (e) {
-          let taskN = e.target.parentNode.parentNode.classList[0];
-          let taskI = taskN[taskN.length - 1];
-          console.log(taskI);
-          projectList[eventIndex].removeTask(taskI);
-          console.log(projectList[eventIndex].getTasks());
-          showTasks(eventIndex, taskListSelector);
-        });
-      });
-    }
+//deleteTask event listener
+function deleteListener(eventIndex, taskListSelector) {
+  document.querySelectorAll("#deleteTask").forEach((el) => {
+    el.addEventListener("click", function (e) {
+      let taskN = e.target.parentNode.parentNode.classList[0];
+      let taskI = taskN[taskN.length - 1];
+      console.log(taskI);
+      projectList[eventIndex].removeTask(taskI);
+      console.log(projectList[eventIndex].getTasks());
+      showTasks(eventIndex, taskListSelector);
+    });
+  });
+}
 
-    function showTasks(eventIndex, taskListSelector) {
-      let currentProjectTasks = projectList[eventIndex].getTasks();
-      console.log(currentProjectTasks.length);
-      taskListSelector.innerHTML = "";
-      for (let i = 0; i < currentProjectTasks.length; i++) {
-        taskListSelector.innerHTML += `
+//ahora mismo, el botón de showtasks reemplaza al botón de add task (porque cambia el html), además, falta la lógica que añada la task al project
+function addTaskListener() {
+  document.querySelectorAll("#addTask").forEach((el) => {
+    el.addEventListener("click", function (e) {
+      let eventClass = e.target.parentNode.classList[0];
+      let eventIndex = eventClass[eventClass.length - 1];
+      let addTaskSelector = document.querySelector(
+        `#taskList${eventIndex}>#addTaskForm`
+      );
+      if (addTaskSelector.innerHTML == "") {
+        addTaskSelector.innerHTML += `
+      <form>
+        <input type="text" id="taskName" placeholder="Task name">
+        <input type="text" id="taskDescription" placeholder="Task description">
+        <input type="date" id="taskDueDate" placeholder="Task due date">
+        <div id="priorityContainer">
+          <label for="priority">Priority</label>
+          <select id="priority">
+            <option value="1">Low</option>
+            <option value="2">Medium</option>
+            <option value="3">High</option>
+          </select>
+        </div>
+        <button id="addTaskToProject">Add task to project</button>
+      </form>
+      
+      `;
+      } else {
+        addTaskSelector.innerHTML = "";
+      }
+    });
+  });
+}
+
+// const task = new todoItem(
+//   document.querySelector(`#taskName${eventIndex}`).value,
+//   document.querySelector(`#taskDescription${eventIndex}`).value,
+//   document.querySelector(`#taskDueDate${eventIndex}`).value,
+//   document.querySelector(`#taskPriority${eventIndex}`).value
+// );
+// addTask(task);
+
+//show tasks logic; is called when triggered by the showTask event listener, but also when a task is added or deleted
+function showTasks(eventIndex, taskListSelector) {
+  let currentProjectTasks = projectList[eventIndex].getTasks();
+  console.log(currentProjectTasks.length);
+  taskListSelector.innerHTML = "";
+  for (let i = 0; i < currentProjectTasks.length; i++) {
+    taskListSelector.innerHTML += `
           <div class="task${i}">
             <h3>${currentProjectTasks[i].getName()}</h3>
             <p>${currentProjectTasks[i].getDescription()}</p>
@@ -79,13 +126,11 @@ function addTasksListener() {
             </div>
           </div>
         `;
-        console.log(currentProjectTasks, i);
-        drawColors(currentProjectTasks, eventIndex, i);
-      }
-      setDone(currentProjectTasks);
-      deleteListener(eventIndex, taskListSelector);
-    }
-  });
+    console.log(currentProjectTasks, i);
+    drawColors(currentProjectTasks, eventIndex, i);
+  }
+  setDone(currentProjectTasks);
+  deleteListener(eventIndex, taskListSelector);
 }
 
 function drawColors(currentProjectTasks, eventIndex, i) {
@@ -94,7 +139,7 @@ function drawColors(currentProjectTasks, eventIndex, i) {
     document.querySelector(`#taskList${eventIndex}>.task${i}>h3`).style.color =
       "green";
   } else if (
-    currentProjectTasks[i].getPriority() > 3 &&
+    currentProjectTasks[i].getPriority() > 2 &&
     currentProjectTasks[i].getDone() == false
   ) {
     //if tasks priority is high (and undone), make text red
