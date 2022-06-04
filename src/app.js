@@ -14,6 +14,9 @@ class todoProject {
     const newTask = new todoItem(name);
     this.tasks.push(newTask);
   }
+  removeTask(index) {
+    this.tasks.splice(index, 1);
+  }
 }
 
 class todoItem {

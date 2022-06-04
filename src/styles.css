@@ -6,4 +6,35 @@ html {
   margin: auto;
   line-height: 1.5rem;
   font-size: 24px;
+  height: 100%;
+}
+
+h2 {
+  text-transform: uppercase;
+  border-bottom: 1px solid grey;
+}
+
+#buttonContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#doneContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+button,
+label,
+h2,
+h3 {
+  text-transform: uppercase;
+}
+
+label:hover {
+  cursor: pointer;
 }
