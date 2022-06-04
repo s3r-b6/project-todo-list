@@ -1,0 +1,9 @@
+@import "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css";
+
+html {
+  max-width: 38rem;
+  padding: 1rem;
+  margin: auto;
+  line-height: 1.5rem;
+  font-size: 24px;
+}
