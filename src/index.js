@@ -5,14 +5,15 @@ window.onload = () => {
   //tests
   defaultItems();
   showProjects();
-  showListener();
 };
 
 //initialize projects
 function showProjects() {
+  //button to add projects
   document.querySelector("#projects").innerHTML = `
       <button id="addProject">Add Project</button>
   `;
+  //loop to add the projects in the projectList array
   for (let i = 0; i < projectList.length; i++) {
     document.querySelector("#projects").innerHTML += `
     <div class="project${i}">
@@ -20,43 +21,80 @@ function showProjects() {
       <p>${projectList[i].description}</p>
       <p> 6/7 </p>
       <button id="showTask">Show tasks</button>
-      <button id="addTask">Add task</button>
+      <button id="addTask">Add a task</button>
       <button id="deleteProject">Delete project</button>
-      <div id="taskList${i}"><div id="addTaskForm"></div></div>
+      <div id="newTaskFormContainer${i}"></div>
+      <div id="taskList${i}"></div>
     </div>  
   `;
   }
+  showTasksListener();
   addTaskListener();
+  deleteProjectListener();
 }
 
 //showTasks event listener
-function showListener() {
+function showTasksListener() {
   document.querySelectorAll("#showTask").forEach((el) => {
     el.addEventListener("click", function (e) {
       //console.log(e.target.parentNode);
       let eventClass = e.target.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
       let taskListSelector = document.querySelector(`#taskList${eventIndex}`);
+      //console.log(eventIndex);
       //if tasks are already shown, hide them
-      if (taskListSelector.innerHTML != "") {
-        taskListSelector.innerHTML = "";
-      } else {
+      if (taskListSelector.innerHTML == "") {
+        document.querySelector(`.project${eventIndex}>#showTask`).innerHTML =
+          "Hide tasks";
         showTasks(eventIndex, taskListSelector);
+      } else {
+        document.querySelector(`.project${eventIndex}>#showTask`).innerHTML =
+          "Show tasks";
+        taskListSelector.innerHTML = "";
       }
     });
   });
 }
 
 //deleteTask event listener
-function deleteListener(eventIndex, taskListSelector) {
+function deleteTaskListener(eventIndex, taskListSelector) {
   document.querySelectorAll("#deleteTask").forEach((el) => {
     el.addEventListener("click", function (e) {
       let taskN = e.target.parentNode.parentNode.classList[0];
       let taskI = taskN[taskN.length - 1];
-      console.log(taskI);
-      projectList[eventIndex].removeTask(taskI);
-      console.log(projectList[eventIndex].getTasks());
+      // console.log(taskI);
+      //placeholder || lo suyo sería crear una alerta custom que devuelva un bool
+      let deleteTask = confirm("Are you sure you want to delete this task?");
+      if (deleteTask) {
+        projectList[eventIndex].removeTask(taskI);
+        showTasks(eventIndex, taskListSelector);
+      } else {
+        showTasks(eventIndex, taskListSelector);
+      }
+      // console.log(projectList[eventIndex].getTasks());
       showTasks(eventIndex, taskListSelector);
+    });
+  });
+}
+
+//delete project event listener
+function deleteProjectListener() {
+  document.querySelectorAll("#deleteProject").forEach((el) => {
+    el.addEventListener("click", function (e) {
+      let eventClass = e.target.parentNode.classList[0];
+      let eventIndex = eventClass[eventClass.length - 1];
+
+      // console.log(eventIndex);
+      //placeholder || lo suyo sería crear una alerta custom que devuelva un bool
+      let deleteProject = confirm(
+        "Are you sure you want to delete this project?"
+      );
+      if (deleteProject) {
+        projectList.splice(eventIndex, 1);
+        showProjects();
+      } else {
+        showProjects();
+      }
     });
   });
 }
@@ -67,49 +105,106 @@ function addTaskListener() {
     el.addEventListener("click", function (e) {
       let eventClass = e.target.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
-      let addTaskSelector = document.querySelector(
-        `#taskList${eventIndex}>#addTaskForm`
+      let formContainer = document.querySelector(
+        `#newTaskFormContainer${eventIndex}`
       );
-      if (addTaskSelector.innerHTML == "") {
-        addTaskSelector.innerHTML += `
-      <form>
-        <input type="text" id="taskName" placeholder="Task name">
-        <input type="text" id="taskDescription" placeholder="Task description">
-        <input type="date" id="taskDueDate" placeholder="Task due date">
-        <div id="priorityContainer">
-          <label for="priority">Priority</label>
-          <select id="priority">
-            <option value="1">Low</option>
-            <option value="2">Medium</option>
-            <option value="3">High</option>
-          </select>
-        </div>
-        <button id="addTaskToProject">Add task to project</button>
-      </form>
-      
-      `;
+      //if formContainer is empty, add the form, else, empty the container
+      if (formContainer.innerHTML == "") {
+        document.querySelector(`.project${eventIndex}>#addTask`).innerHTML =
+          "Hide menu";
+        formContainer.innerHTML = `
+        <form id="newTaskForm${eventIndex}" onsubmit="return false">
+          <input type="text" id="taskNameForm" placeholder="Task name">
+          <input type="text" id="taskDescriptionForm" placeholder="Task description">
+          <input type="date" id="taskDueDateForm" placeholder="Task due date">
+          <div id="priorityContainer">
+            <label for="priority">Priority</label>
+            <select id="priorityForm">
+              <option value="1">Low</option>
+              <option value="2">Medium</option>
+              <option value="3">High</option>
+            </select>
+          </div>
+          <button id="addTaskToProject">Add task to project</button>
+        </form>
+        `;
+        let addTaskButton = document.querySelector(
+          `#newTaskForm${eventIndex}>#addTaskToProject`
+        );
+        addTaskButton.addEventListener("click", (e) => {
+          let eventClass = e.target.parentNode.id;
+          let eventIndex = eventClass[eventClass.length - 1];
+          let taskListSelector = document.querySelector(
+            `#taskList${eventIndex}`
+          );
+
+          let taskName = document.querySelector(
+            `#newTaskForm${eventIndex}>#taskNameForm`
+          ).value;
+          let taskDescription = document.querySelector(
+            `#newTaskForm${eventIndex}>#taskDescriptionForm`
+          ).value;
+          let taskDueDate = document.querySelector(
+            `#newTaskForm${eventIndex}>#taskDueDateForm`
+          ).value;
+          let taskPriority = document.querySelector(
+            `#newTaskForm${eventIndex}>#priorityContainer>#priorityForm`
+          ).value;
+          if (
+            /[\w\d]{1,25}/.test(taskName) &&
+            /[\w\d]{1,144}/.test(taskDescription) &&
+            /[123]{1}/.test(taskPriority)
+          ) {
+            const addedTodoItem = new todoItem(
+              taskName.toString(),
+              taskDescription.toString(),
+              taskDueDate,
+              taskPriority
+            );
+            projectList[eventIndex].addTask(addedTodoItem);
+            showTasks(eventIndex, taskListSelector);
+          } else {
+            //placeholder || crear una alerta custom
+            alert("bad input");
+          }
+        });
       } else {
-        addTaskSelector.innerHTML = "";
+        document.querySelector(`.project${eventIndex}>#addTask`).innerHTML =
+          "Add a task";
+        formContainer.innerHTML = "";
       }
     });
   });
 }
-
-// const task = new todoItem(
-//   document.querySelector(`#taskName${eventIndex}`).value,
-//   document.querySelector(`#taskDescription${eventIndex}`).value,
-//   document.querySelector(`#taskDueDate${eventIndex}`).value,
-//   document.querySelector(`#taskPriority${eventIndex}`).value
-// );
 // addTask(task);
 
 //show tasks logic; is called when triggered by the showTask event listener, but also when a task is added or deleted
 function showTasks(eventIndex, taskListSelector) {
   let currentProjectTasks = projectList[eventIndex].getTasks();
-  console.log(currentProjectTasks.length);
+  // console.log(currentProjectTasks.length);
   taskListSelector.innerHTML = "";
   for (let i = 0; i < currentProjectTasks.length; i++) {
-    taskListSelector.innerHTML += `
+    //if task.getDone == true; don't show priority setter
+    if (currentProjectTasks[i].getDone()) {
+      taskListSelector.innerHTML += `
+          <div class="task${i}">
+            <h3>${currentProjectTasks[i].getName()}</h3>
+            <p>${currentProjectTasks[i].getDescription()}</p>
+            <p>${currentProjectTasks[i].getDueDate()}</p>
+            <div id="buttonContainer">
+              <button id="deleteTask">Delete Task</button>
+              <div id="doneContainer">
+                <label for="done"> Done </label>
+                <input name="done" type="checkbox" id="doneTask" ${
+                  currentProjectTasks[i].getDone() ? "checked" : ""
+                }>
+              </div>
+            </div>
+          </div>
+        `;
+    } else {
+      //if task is undone, show priority setter
+      taskListSelector.innerHTML += `
           <div class="task${i}">
             <h3>${currentProjectTasks[i].getName()}</h3>
             <p>${currentProjectTasks[i].getDescription()}</p>
@@ -126,11 +221,13 @@ function showTasks(eventIndex, taskListSelector) {
             </div>
           </div>
         `;
-    console.log(currentProjectTasks, i);
+    }
+    // console.log(currentProjectTasks, i);
     drawColors(currentProjectTasks, eventIndex, i);
   }
-  setDone(currentProjectTasks);
-  deleteListener(eventIndex, taskListSelector);
+  setDone(currentProjectTasks, eventIndex, taskListSelector);
+  setPriority(currentProjectTasks, eventIndex, taskListSelector);
+  deleteTaskListener(eventIndex, taskListSelector);
 }
 
 function drawColors(currentProjectTasks, eventIndex, i) {
@@ -155,21 +252,45 @@ function drawColors(currentProjectTasks, eventIndex, i) {
   }
 }
 //makes the Done button interact with the task object through the setDone method
-function setDone(currentProjectTasks) {
+function setDone(currentProjectTasks, eventIndex, taskListSelector) {
   document.querySelectorAll("#doneTask").forEach((el) => {
     el.addEventListener("change", function (e) {
       //gets the task index from the class name
       let taskN = e.target.parentNode.parentNode.parentNode.classList[0];
       let taskI = taskN[taskN.length - 1];
-      console.log(taskI);
+      // console.log(taskI);
       if (this.checked) {
         currentProjectTasks[taskI].setDone(true);
-        console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
-        console.log(currentProjectTasks[taskI]);
+        showTasks(eventIndex, taskListSelector);
+        // console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
+        // console.log(currentProjectTasks[taskI]);
       } else {
         currentProjectTasks[taskI].setDone(false);
-        console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
-        console.log(currentProjectTasks[taskI]);
+        showTasks(eventIndex, taskListSelector);
+        // console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
+        // console.log(currentProjectTasks[taskI]);
+      }
+    });
+  });
+}
+
+function setPriority(currentProjectTasks, eventIndex, taskListSelector) {
+  document.querySelectorAll("#priorityTask").forEach((el) => {
+    el.addEventListener("click", function (e) {
+      //gets the task index from the class name
+      let taskN = e.target.parentNode.parentNode.classList[0];
+      let taskI = taskN[taskN.length - 1];
+      // console.log(taskI);
+      // console.log(taskI);
+      if (currentProjectTasks[taskI].getPriority() == 1) {
+        currentProjectTasks[taskI].setPriority(2);
+        showTasks(eventIndex, taskListSelector);
+      } else if (currentProjectTasks[taskI].getPriority() == 2) {
+        currentProjectTasks[taskI].setPriority(3);
+        showTasks(eventIndex, taskListSelector);
+      } else {
+        currentProjectTasks[taskI].setPriority(1);
+        showTasks(eventIndex, taskListSelector);
       }
     });
   });
@@ -208,9 +329,8 @@ function defaultItems() {
   projectList.push(todoProject2);
   todoItem1.setDone(true);
   todoItem3.setPriority(2);
-  todoItem2.setPriority(5);
-  todoProject1.addTask("Buy milk");
+  todoItem2.setPriority(3);
 
-  console.log(projectList);
-  console.log(todoProject1.getTasks(), todoProject2.getTasks());
+  // console.log(projectList);
+  // console.log(todoProject1.getTasks(), todoProject2.getTasks());
 }

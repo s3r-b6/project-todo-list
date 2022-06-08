@@ -11,8 +11,7 @@ class todoProject {
     return this.tasks;
   }
   addTask(name) {
-    const newTask = new todoItem(name);
-    this.tasks.push(newTask);
+    this.tasks.unshift(name);
   }
   removeTask(index) {
     this.tasks.splice(index, 1);
@@ -21,13 +20,13 @@ class todoProject {
 
 class todoItem {
   //@name: string; @description: string; @dueDate: Date; @done: boolean; @priority: number (1-3) (l-m-h);
-  constructor(name, description, dueDate, priority = 0) {
+  constructor(name, description, dueDate, priority = 1) {
     this.name = name;
     this.description = description;
     if (dueDate) this.dueDate = new Date(dueDate);
     else this.dueDate = new Date();
     this.done = false;
-    this.priority = 0;
+    this.priority = priority;
   }
 
   getName() {
@@ -49,7 +48,7 @@ class todoItem {
     this.done = done;
   }
   setPriority(priority) {
-    if (priority >= 0 && priority <= 5) this.priority = priority;
+    if (priority >= 1 && priority <= 3) this.priority = priority;
     else console.error("error: priority must be between 0 and 5");
   }
 }
