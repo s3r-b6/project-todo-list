@@ -1,7 +1,8 @@
 export { todoProject, todoItem };
 
 class todoProject {
-  constructor(name, description, tasks) {
+  //@name: string; @description: string; @tasks: obj;
+  constructor(name, description, tasks = []) {
     this.name = name;
     this.description = description;
     this.tasks = tasks;

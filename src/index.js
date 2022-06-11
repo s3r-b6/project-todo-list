@@ -5,13 +5,17 @@ window.onload = () => {
   //tests
   defaultItems();
   showProjects();
+  addProjectListener();
 };
 
 //initialize projects
 function showProjects() {
   //button to add projects
   document.querySelector("#projects").innerHTML = `
-      <button id="addProject">Add Project</button>
+  <div id="addProject">
+      <button id="addProjectButton">Add Project</button>
+      <div id="addProjectForm"></div>
+  </div>
   `;
   //loop to add the projects in the projectList array
   for (let i = 0; i < projectList.length; i++) {
@@ -33,15 +37,54 @@ function showProjects() {
   deleteProjectListener();
 }
 
+//this should delete the placeholder projects and show the user ones
+function addProjectListener() {
+  let projectForm = document.querySelector("#addProjectForm");
+  document.querySelector("#addProjectButton").addEventListener("click", () => {
+    if (projectForm.innerHTML != "") {
+      document.querySelector("#addProjectButton").innerHTML = "Add project";
+      projectForm.innerHTML = "";
+    } else {
+      document.querySelector("#addProjectButton").innerHTML = "Hide menu";
+      projectForm.innerHTML = `
+      <input id="projectName" type="text" name="project-name" placeholder="Project name">
+      <input id="projectDescription" type"text" name="project-description" placeholder="Description">
+      <button id="projectSubmit"> Submit </button>
+        `;
+      document.querySelector("#projectSubmit").addEventListener("click", () => {
+        let projectName = document.querySelector("#projectName").value;
+        let projectDescription = document.querySelector(
+          "#projectDescription"
+        ).value;
+        if (
+          /[\w\d]{1,25}/.test(projectName) &&
+          /[\w\d]{1,144}/.test(projectDescription)
+        ) {
+          const newProject = new todoProject(
+            projectName.toString(),
+            projectDescription.toString()
+          );
+          projectList.push(newProject);
+          showProjects();
+          addProjectListener();
+          console.log(projectList)
+        } else {
+          alert("bad input");
+        }
+      });
+    }
+  });
+}
+
 //showTasks event listener
 function showTasksListener() {
   document.querySelectorAll("#showTask").forEach((el) => {
     el.addEventListener("click", function (e) {
-      //console.log(e.target.parentNode);
+      // console.log(e.target.parentNode);
       let eventClass = e.target.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
       let taskListSelector = document.querySelector(`#taskList${eventIndex}`);
-      //console.log(eventIndex);
+      // console.log(eventIndex);
       //if tasks are already shown, hide them
       if (taskListSelector.innerHTML == "") {
         document.querySelector(`.project${eventIndex}>#showTask`).innerHTML =
@@ -176,7 +219,6 @@ function addTaskListener() {
     });
   });
 }
-// addTask(task);
 
 //show tasks logic; is called when triggered by the showTask event listener, but also when a task is added or deleted
 function showTasks(eventIndex, taskListSelector) {

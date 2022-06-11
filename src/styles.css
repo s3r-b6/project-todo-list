@@ -6,12 +6,21 @@ html {
   margin: auto;
   line-height: 1.5rem;
   font-size: 24px;
-  height: 100%;
+  height: 100%;  
+  background-color: #1a222d !important;
 }
+
 
 h2 {
   text-transform: uppercase;
   border-bottom: 1px solid grey;
+}
+
+#addProjectForm {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  align-items: center;
 }
 
 #buttonContainer {
