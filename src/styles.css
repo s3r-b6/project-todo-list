@@ -7,9 +7,17 @@ html {
   line-height: 1.5rem;
   font-size: 24px;
   height: 100%;  
+  overflow: hidden;
   background-color: #1a222d !important;
 }
 
+body {
+  padding-top: 1rem !important;
+  height: 85%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #1a222d !important;
+}
 
 h2 {
   text-transform: uppercase;

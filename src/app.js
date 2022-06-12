@@ -1,10 +1,11 @@
 export { todoProject, todoItem };
 
 class todoProject {
-  //@name: string; @description: string; @tasks: obj;
-  constructor(name, description, tasks = []) {
+  //@name: string; @description: string; @tasks: obj; @usermade: bool (used to flag non user made items)
+  constructor(name, description, tasks = [], usermade = true) {
     this.name = name;
     this.description = description;
+    this.usermade = usermade;
     this.tasks = tasks;
   }
 
@@ -14,6 +15,9 @@ class todoProject {
   addTask(name) {
     this.tasks.unshift(name);
   }
+  getUsermade() {
+    return this.usermade;
+  }
   removeTask(index) {
     this.tasks.splice(index, 1);
   }
@@ -21,12 +25,12 @@ class todoProject {
 
 class todoItem {
   //@name: string; @description: string; @dueDate: Date; @done: boolean; @priority: number (1-3) (l-m-h);
-  constructor(name, description, dueDate, priority = 1) {
+  constructor(name, description, dueDate, priority = 1, done=false) {
     this.name = name;
     this.description = description;
     if (dueDate) this.dueDate = new Date(dueDate);
     else this.dueDate = new Date();
-    this.done = false;
+    this.done = done;
     this.priority = priority;
   }
 

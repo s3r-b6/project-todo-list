@@ -3,10 +3,54 @@ let projectList = [];
 
 window.onload = () => {
   //tests
-  defaultItems();
-  showProjects();
-  addProjectListener();
+  const cachedProjects = JSON.parse(localStorage.getItem("cache"));
+  if (cachedProjects) {
+    //console.log(cachedProjects);
+    function rebuildObjs() {
+      for (let item in cachedProjects) {
+        //console.log(cachedProjects[item]);
+        let currentProject = cachedProjects[item];
+        //name, description, tasks = [], usermade = true
+        const cachedProject = new todoProject(
+          currentProject.name,
+          currentProject.description,
+          rebuildTasks(),
+          currentProject.usermadefalse
+        );
+        projectList.push(cachedProject);
+        function rebuildTasks() {
+          for (let item in currentProject.tasks) {
+            //name, description, dueDate, priority = 1, done=false
+            const cachedItem = new todoItem(
+              currentProject.tasks[item].name,
+              currentProject.tasks[item].description,
+              currentProject.tasks[item].Date,
+              currentProject.tasks[item].priority,
+              currentProject.tasks[item].done
+            );
+            currentProject.tasks.splice([item], 1, cachedItem);
+          }
+          return currentProject.tasks;
+        }
+      }
+    }
+    rebuildObjs();
+    showProjects();
+    addProjectListener();
+  } else {
+    defaultItems();
+    showProjects();
+    addProjectListener();
+  }
 };
+
+function refreshCache() {
+  localStorage.clear;
+  localStorage.setItem("cache", JSON.stringify(projectList));
+}
+
+//IDEA: implementar <p id="currentDone"> 6/7 </p>
+//que en el overview del project salga cuántas tareas de cuántas están hechas, quizás las prioritarias, etc.
 
 //initialize projects
 function showProjects() {
@@ -23,7 +67,7 @@ function showProjects() {
     <div class="project${i}">
       <h2>${projectList[i].name}</h2>
       <p>${projectList[i].description}</p>
-      <p> 6/7 </p>
+      <p id="currentDone"> 6/7 </p>
       <button id="showTask">Show tasks</button>
       <button id="addTask">Add a task</button>
       <button id="deleteProject">Delete project</button>
@@ -64,10 +108,17 @@ function addProjectListener() {
             projectName.toString(),
             projectDescription.toString()
           );
+          //if default items are still on project list when a user-project is added, delete them
+          //as there are just 2 possible non-usermade projects, just check in the 0 and 1 indexes (deleting the 0th index would make the 1st 0, so check for 0th two times) with the provided method
+          //the first test is to check if projectList[0] exists; this is, the list isn't empty; else it wouldn't let add projects
+          if (projectList[0] && projectList[0].getUsermade() == false)
+            projectList.splice(0, 1);
+          if (projectList[0] && projectList[0].getUsermade() == false)
+            projectList.splice(0, 1);
           projectList.push(newProject);
           showProjects();
           addProjectListener();
-          console.log(projectList)
+          refreshCache();
         } else {
           alert("bad input");
         }
@@ -87,6 +138,7 @@ function showTasksListener() {
       // console.log(eventIndex);
       //if tasks are already shown, hide them
       if (taskListSelector.innerHTML == "") {
+        console.log(projectList[eventIndex].getTasks());
         document.querySelector(`.project${eventIndex}>#showTask`).innerHTML =
           "Hide tasks";
         showTasks(eventIndex, taskListSelector);
@@ -95,27 +147,6 @@ function showTasksListener() {
           "Show tasks";
         taskListSelector.innerHTML = "";
       }
-    });
-  });
-}
-
-//deleteTask event listener
-function deleteTaskListener(eventIndex, taskListSelector) {
-  document.querySelectorAll("#deleteTask").forEach((el) => {
-    el.addEventListener("click", function (e) {
-      let taskN = e.target.parentNode.parentNode.classList[0];
-      let taskI = taskN[taskN.length - 1];
-      // console.log(taskI);
-      //placeholder || lo suyo sería crear una alerta custom que devuelva un bool
-      let deleteTask = confirm("Are you sure you want to delete this task?");
-      if (deleteTask) {
-        projectList[eventIndex].removeTask(taskI);
-        showTasks(eventIndex, taskListSelector);
-      } else {
-        showTasks(eventIndex, taskListSelector);
-      }
-      // console.log(projectList[eventIndex].getTasks());
-      showTasks(eventIndex, taskListSelector);
     });
   });
 }
@@ -135,6 +166,7 @@ function deleteProjectListener() {
       if (deleteProject) {
         projectList.splice(eventIndex, 1);
         showProjects();
+        refreshCache();
       } else {
         showProjects();
       }
@@ -206,6 +238,7 @@ function addTaskListener() {
             );
             projectList[eventIndex].addTask(addedTodoItem);
             showTasks(eventIndex, taskListSelector);
+            refreshCache();
           } else {
             //placeholder || crear una alerta custom
             alert("bad input");
@@ -304,11 +337,13 @@ function setDone(currentProjectTasks, eventIndex, taskListSelector) {
       if (this.checked) {
         currentProjectTasks[taskI].setDone(true);
         showTasks(eventIndex, taskListSelector);
+        refreshCache();
         // console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
         // console.log(currentProjectTasks[taskI]);
       } else {
         currentProjectTasks[taskI].setDone(false);
         showTasks(eventIndex, taskListSelector);
+        refreshCache();
         // console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
         // console.log(currentProjectTasks[taskI]);
       }
@@ -327,13 +362,38 @@ function setPriority(currentProjectTasks, eventIndex, taskListSelector) {
       if (currentProjectTasks[taskI].getPriority() == 1) {
         currentProjectTasks[taskI].setPriority(2);
         showTasks(eventIndex, taskListSelector);
+        refreshCache();
       } else if (currentProjectTasks[taskI].getPriority() == 2) {
         currentProjectTasks[taskI].setPriority(3);
         showTasks(eventIndex, taskListSelector);
+        refreshCache();
       } else {
         currentProjectTasks[taskI].setPriority(1);
         showTasks(eventIndex, taskListSelector);
+        refreshCache();
       }
+    });
+  });
+}
+
+//deleteTask event listener
+function deleteTaskListener(eventIndex, taskListSelector) {
+  document.querySelectorAll("#deleteTask").forEach((el) => {
+    el.addEventListener("click", function (e) {
+      let taskN = e.target.parentNode.parentNode.classList[0];
+      let taskI = taskN[taskN.length - 1];
+      // console.log(taskI);
+      //placeholder || lo suyo sería crear una alerta custom que devuelva un bool
+      let deleteTask = confirm("Are you sure you want to delete this task?");
+      if (deleteTask) {
+        projectList[eventIndex].removeTask(taskI);
+        showTasks(eventIndex, taskListSelector);
+        refreshCache();
+      } else {
+        showTasks(eventIndex, taskListSelector);
+      }
+      // console.log(projectList[eventIndex].getTasks());
+      showTasks(eventIndex, taskListSelector);
     });
   });
 }
@@ -355,24 +415,27 @@ function defaultItems() {
     new Date("2020-01-01")
   );
 
-  const todoProject1 = new todoProject("Family", "This is the family project", [
-    todoItem1,
-    todoItem2,
-    todoItem3,
-  ]);
+  //the fourth arg flags the project as non-usermade (default == usermade; so when a user adds a project of his own default-projects can be deleted)
+  const defaultProject1 = new todoProject(
+    "Family",
+    "This is the family project",
+    [todoItem1, todoItem2, todoItem3],
+    false
+  );
 
-  const todoProject2 = new todoProject("Work", "This is the work project", [
-    todoItem1,
-    todoItem2,
-    todoItem3,
-  ]);
+  const defaultProject2 = new todoProject(
+    "Work",
+    "This is the work project",
+    [todoItem1, todoItem2, todoItem3],
+    false
+  );
 
-  projectList.push(todoProject1);
-  projectList.push(todoProject2);
+  projectList.push(defaultProject1);
+  projectList.push(defaultProject2);
   todoItem1.setDone(true);
   todoItem3.setPriority(2);
   todoItem2.setPriority(3);
 
   // console.log(projectList);
-  // console.log(todoProject1.getTasks(), todoProject2.getTasks());
+  // console.log(defaultProject1.getTasks(), defaultProject2.getTasks());
 }
