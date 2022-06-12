@@ -4,7 +4,7 @@ let projectList = [];
 window.onload = () => {
   //tests
   const cachedProjects = JSON.parse(localStorage.getItem("cache"));
-  if (cachedProjects) {
+  if (cachedProjects && cachedProjects.length != 0) {
     //console.log(cachedProjects);
     function rebuildObjs() {
       for (let item in cachedProjects) {
@@ -15,7 +15,7 @@ window.onload = () => {
           currentProject.name,
           currentProject.description,
           rebuildTasks(),
-          currentProject.usermadefalse
+          currentProject.usermade
         );
         projectList.push(cachedProject);
         function rebuildTasks() {
@@ -58,13 +58,16 @@ function showProjects() {
   addTaskListener();
   addProjectListener();
   deleteProjectListener();
+  resetProjectsListener();
 
   function drawProjects() {
     document.querySelector("#projects").innerHTML = `
   <div id="addProject">
       <button id="addProjectButton">Add Project</button>
       <div id="addProjectForm"></div>
+      <button id="resetProjects">Reset Projects</button>
   </div>
+  
   `;
     //loop to add the projects in the projectList array
     for (let i = 0; i < projectList.length; i++) {
@@ -72,15 +75,44 @@ function showProjects() {
     <div class="project${i}">
       <h2>${projectList[i].name}</h2>
       <p>${projectList[i].description}</p>
-      <p id="currentDone"> 6/7 </p>
-      <button id="showTask">Show tasks</button>
-      <button id="addTask">Add a task</button>
-      <button id="deleteProject">Delete project</button>
+      <p id="currentDone">${projectList[i].getDoneTasks()} </p>
+      <div id="buttonContainer">
+        <button id="showTask">Show tasks</button>
+        <button id="addTask">Add a task</button>
+        <button id="deleteProject">Delete project</button>
+      </div>
       <div id="newTaskFormContainer${i}"></div>
-      <div id="taskList${i}"></div>
+      <ul id="taskList${i}"></ul>
     </div>  
   `;
+      if (projectList[i].getTasks().length == 0) {
+        document
+          .querySelector(`.project${i}>#buttonContainer>#showTask`)
+          .classList.add("hidden");
+      }
     }
+  }
+}
+
+function resetProjectsListener() {
+  document
+    .querySelector("#resetProjects")
+    .addEventListener("click", resetProjects());
+
+  function resetProjects() {
+    return () => {
+      let deleteProjects = confirm(
+        "Are you sure you want to delete ALL projects? This is unreversible"
+      );
+      if (deleteProjects) {
+        projectList = [];
+        localStorage.removeItem("cache");
+        defaultItems();
+        showProjects();
+      } else {
+        return;
+      }
+    };
   }
 }
 
@@ -147,37 +179,17 @@ function showTasksListener() {
   function showTasks() {
     return (e) => {
       // console.log(e.target.parentNode);
-      let eventClass = e.target.parentNode.classList[0];
+      let eventClass = e.target.parentNode.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
       let taskListSelector = document.querySelector(`#taskList${eventIndex}`);
       let showTaskButton = document.querySelector(
-        `.project${eventIndex}>#showTask`
+        `.project${eventIndex}>#buttonContainer>#showTask`
       );
-      // console.log(eventIndex);
       //if tasks are already shown, hide them
       //console.log(projectList[eventIndex].getTasks());
-      if (
-        projectList[eventIndex].getTasks().length != 0 &&
-        taskListSelector.innerHTML == ""
-      ) {
-        //console.log(projectList[eventIndex].getTasks());
+      if (taskListSelector.innerHTML == "") {
         showTaskButton.innerHTML = "Hide tasks";
         drawTasks(eventIndex, taskListSelector);
-      } else if (
-        projectList[eventIndex].getTasks().length == 0 &&
-        taskListSelector.innerHTML == ""
-      ) {
-        //if no tasks are added, show an error through the button
-        showTaskButton.innerHTML = "No tasks yet!";
-        document
-          .querySelector(`.project${eventIndex}>#showTask`)
-          .classList.add("error");
-        setTimeout(() => {
-          showTaskButton.innerHTML = "Show tasks";
-          document
-            .querySelector(`.project${eventIndex}>#showTask`)
-            .classList.remove("error");
-        }, 1500);
       } else {
         showTaskButton.innerHTML = "Show tasks";
         taskListSelector.innerHTML = "";
@@ -191,43 +203,36 @@ function drawTasks(eventIndex, taskListSelector) {
   // console.log(currentProjectTasks.length);
   taskListSelector.innerHTML = "";
   for (let i = 0; i < currentProjectTasks.length; i++) {
+    let priority;
+    if (currentProjectTasks[i].getPriority() != 3) {
+      priority = currentProjectTasks[i].getPriority() + 1;
+    } else priority = 1;
+    taskListSelector.innerHTML += `
+          <li class="task${i}">
+            <h3>${currentProjectTasks[i].getName()}</h3>
+            <p>${currentProjectTasks[i].getDescription()}</p>
+            <p>${currentProjectTasks[i].getDueDate()}</p>
+            <div id="buttonContainer">
+              <button id="priorityTask" class="priority${priority}">Set Priority </button>
+              <button id="deleteTask">Delete Task</button>
+              <div id="doneContainer">
+                <label for="done"> Done </label>
+                <input name="done" type="checkbox" id="doneTask" ${
+                  currentProjectTasks[i].getDone() ? "checked" : ""
+                }>
+              </div>
+            </div>
+          </li>
+        `;
     //if task.getDone == true; don't show priority setter
     if (currentProjectTasks[i].getDone()) {
-      taskListSelector.innerHTML += `
-          <div class="task${i}">
-            <h3>${currentProjectTasks[i].getName()}</h3>
-            <p>${currentProjectTasks[i].getDescription()}</p>
-            <p>${currentProjectTasks[i].getDueDate()}</p>
-            <div id="buttonContainer">
-              <button id="deleteTask">Delete Task</button>
-              <div id="doneContainer">
-                <label for="done"> Done </label>
-                <input name="done" type="checkbox" id="doneTask" ${
-                  currentProjectTasks[i].getDone() ? "checked" : ""
-                }>
-              </div>
-            </div>
-          </div>
-        `;
+      document
+        .querySelector(`.task${i}>#buttonContainer>#priorityTask`)
+        .classList.add("hidden");
     } else {
-      //if task is undone, show priority setter
-      taskListSelector.innerHTML += `
-          <div class="task${i}">
-            <h3>${currentProjectTasks[i].getName()}</h3>
-            <p>${currentProjectTasks[i].getDescription()}</p>
-            <p>${currentProjectTasks[i].getDueDate()}</p>
-            <div id="buttonContainer">
-              <button id="priorityTask">Set Priority </button>
-              <button id="deleteTask">Delete Task</button>
-              <div id="doneContainer">
-                <label for="done"> Done </label>
-                <input name="done" type="checkbox" id="doneTask" ${
-                  currentProjectTasks[i].getDone() ? "checked" : ""
-                }>
-              </div>
-            </div>
-          </div>
-        `;
+      document
+        .querySelector(`.task${i}>#buttonContainer>#priorityTask`)
+        .classList.remove("hidden");
     }
     // console.log(currentProjectTasks, i);
     drawColors(currentProjectTasks, eventIndex, i);
@@ -270,23 +275,32 @@ function drawTasks(eventIndex, taskListSelector) {
     function changeDone() {
       return function (e) {
         //gets the task index from the class name
-        let taskN = e.target.parentNode.parentNode.parentNode.classList[0];
-        let taskI = taskN[taskN.length - 1];
-        // console.log(taskI);
+        let projectI = e.target.parentNode.parentNode.parentNode.parentNode.id;
+        projectI = projectI[projectI.length - 1];
+        let taskI = e.target.parentNode.parentNode.parentNode.classList[0];
+        taskI = taskI[taskI.length - 1];
         if (this.checked) {
           currentProjectTasks[taskI].setDone(true);
           drawTasks(eventIndex, taskListSelector);
+          redrawDoneCounter(projectI);
           refreshCache();
           // console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
           // console.log(currentProjectTasks[taskI]);
         } else {
           currentProjectTasks[taskI].setDone(false);
           drawTasks(eventIndex, taskListSelector);
+          redrawDoneCounter(projectI);
           refreshCache();
           // console.log("taskDone is now: " + currentProjectTasks[taskI].getDone());
           // console.log(currentProjectTasks[taskI]);
         }
       };
+
+      function redrawDoneCounter(projectI) {
+        document.querySelector(
+          `.project${projectI}>#currentDone`
+        ).innerHTML = `${projectList[projectI].getDoneTasks()}`;
+      }
     }
   }
 
@@ -298,8 +312,13 @@ function drawTasks(eventIndex, taskListSelector) {
     function changePriority() {
       return function (e) {
         //gets the task index from the class name
-        let taskN = e.target.parentNode.parentNode.classList[0];
-        let taskI = taskN[taskN.length - 1];
+        let taskListI = e.target.parentNode.parentNode.parentNode.id;
+        taskListI = taskListI[taskListI.length - 1];
+        let taskI = e.target.parentNode.parentNode.classList[0];
+        taskI = taskI[taskI.length - 1];
+        let priorityButtonSelector = document.querySelector(
+          `#taskList${taskListI}>.task${taskI}>#buttonContainer>#priorityTask`
+        );
         // console.log(taskI);
         // console.log(taskI);
         if (currentProjectTasks[taskI].getPriority() == 1) {
@@ -354,7 +373,7 @@ function deleteProjectListener() {
 
   function deleteProject() {
     return function (e) {
-      let eventClass = e.target.parentNode.classList[0];
+      let eventClass = e.target.parentNode.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
 
       // console.log(eventIndex);
@@ -380,22 +399,23 @@ function addTaskListener() {
 
   function addTask() {
     return (e) => {
-      let eventClass = e.target.parentNode.classList[0];
+      let eventClass = e.target.parentNode.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
       let formContainer = document.querySelector(
         `#newTaskFormContainer${eventIndex}`
       );
       //if formContainer is empty, add the form, else, empty the container
       if (formContainer.innerHTML == "") {
-        document.querySelector(`.project${eventIndex}>#addTask`).innerHTML =
-          "Hide menu";
+        document.querySelector(
+          `.project${eventIndex}>#buttonContainer>#addTask`
+        ).innerHTML = "Hide menu";
         formContainer.innerHTML = `
         <form id="newTaskForm${eventIndex}" onsubmit="return false">
           <input type="text" id="taskNameForm" placeholder="Task name">
           <input type="text" id="taskDescriptionForm" placeholder="Task description">
           <input type="date" id="taskDueDateForm" placeholder="Task due date">
           <div id="priorityContainer">
-            <label for="priority">Priority</label>
+            <label for="priorityForm">Priority</label>
             <select id="priorityForm">
               <option value="1">Low</option>
               <option value="2">Medium</option>
@@ -410,8 +430,9 @@ function addTaskListener() {
         );
         addTaskButton.addEventListener("click", submitTask());
       } else {
-        document.querySelector(`.project${eventIndex}>#addTask`).innerHTML =
-          "Add a task";
+        document.querySelector(
+          `.project${eventIndex}>#buttonContainer>#addTask`
+        ).innerHTML = "Add a task";
         formContainer.innerHTML = "";
       }
     };
@@ -421,6 +442,8 @@ function addTaskListener() {
         let eventClass = e.target.parentNode.id;
         let eventIndex = eventClass[eventClass.length - 1];
         let taskListSelector = document.querySelector(`#taskList${eventIndex}`);
+        let projectI = e.target.parentNode.parentNode.parentNode.classList[0];
+        projectI = projectI[projectI.length - 1];
 
         let taskName = document.querySelector(
           `#newTaskForm${eventIndex}>#taskNameForm`
@@ -447,12 +470,18 @@ function addTaskListener() {
           );
           projectList[eventIndex].addTask(addedTodoItem);
           drawTasks(eventIndex, taskListSelector);
+          redrawDoneCounter(projectI);
           refreshCache();
         } else {
           //placeholder || crear una alerta custom
           alert("bad input");
         }
       };
+      function redrawDoneCounter(projectI) {
+        document.querySelector(
+          `.project${projectI}>#currentDone`
+        ).innerHTML = `${projectList[projectI].getDoneTasks()}`;
+      }
     }
   }
 }

@@ -21,7 +21,21 @@ body {
 
 h2 {
   text-transform: uppercase;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid grey;
+}
+
+#addProject {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#addProject > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 #addProjectForm {
@@ -35,6 +49,8 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid grey;
 }
 
 #doneContainer {
@@ -52,11 +68,22 @@ h3 {
   text-transform: uppercase;
 }
 
-label:hover {
+#doneContainer:hover {
   cursor: pointer;
 }
 
-.error {
-  color: red;
-  transition: color 0.3s ease-in-out;
+.hidden {
+  visibility: collapse !important;
+}
+
+#deleteTask:hover, #deleteProject:hover{
+  background-color: rgb(107, 25, 25);
+}
+
+
+.priority2:hover{
+  background-color: orange;
+}
+.priority3:hover{
+  background-color: red;
 }

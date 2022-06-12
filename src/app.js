@@ -12,6 +12,19 @@ class todoProject {
   getTasks() {
     return this.tasks;
   }
+  getDoneTasks() {
+    let numOfTasks = this.tasks.length;
+    if(numOfTasks == 0) return ''
+    let doneTasks = () => {
+      let counter = 0;
+      for (let i in this.tasks) {
+        if (this.tasks[i].getDone()) counter++;
+      }
+      return counter;
+    };
+    let numDoneTasks = doneTasks();
+    return `Completed Tasks: ${numDoneTasks}/${numOfTasks}`;
+  }
   addTask(name) {
     this.tasks.unshift(name);
   }
