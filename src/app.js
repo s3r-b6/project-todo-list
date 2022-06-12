@@ -25,7 +25,7 @@ class todoProject {
 
 class todoItem {
   //@name: string; @description: string; @dueDate: Date; @done: boolean; @priority: number (1-3) (l-m-h);
-  constructor(name, description, dueDate, priority = 1, done=false) {
+  constructor(name, description, dueDate, priority = 1, done = false) {
     this.name = name;
     this.description = description;
     if (dueDate) this.dueDate = new Date(dueDate);
