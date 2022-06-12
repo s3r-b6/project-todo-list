@@ -47,9 +47,6 @@ function refreshCache() {
   localStorage.setItem("cache", JSON.stringify(projectList));
 }
 
-//IDEA: implementar <p id="currentDone"> 6/7 </p>
-//que en el overview del project salga cuántas tareas de cuántas están hechas, quizás las prioritarias, etc.
-
 //initialize projects
 function showProjects() {
   //button to add projects
@@ -205,7 +202,7 @@ function drawTasks(eventIndex, taskListSelector) {
   for (let i = 0; i < currentProjectTasks.length; i++) {
     let priority;
     if (currentProjectTasks[i].getPriority() != 3) {
-      priority = currentProjectTasks[i].getPriority() + 1;
+      priority = parseInt(currentProjectTasks[i].getPriority()) + 1;
     } else priority = 1;
     taskListSelector.innerHTML += `
           <li class="task${i}">

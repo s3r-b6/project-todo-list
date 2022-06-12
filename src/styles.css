@@ -12,11 +12,9 @@ html {
 }
 
 body {
-  padding-top: 1rem !important;
   height: 85%;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: #1a222d !important;
 }
 
 h2 {
@@ -26,23 +24,35 @@ h2 {
 }
 
 #addProject {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 20%;
 }
 #addProject > * {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 80%;
 }
 
 #addProjectForm {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   display: flex;
-  flex-direction: row;
-  justify-items: center;
+  flex-direction: column !important;
+  justify-content: center;
   align-items: center;
+  width: 80%;
+}
+#addProjectForm > * {
+  box-sizing: border-box;
+  width: 100%;
 }
 
 #buttonContainer {
@@ -76,14 +86,33 @@ h3 {
   visibility: collapse !important;
 }
 
-#deleteTask:hover, #deleteProject:hover{
+#deleteTask:hover,
+#deleteProject:hover {
   background-color: rgb(107, 25, 25);
 }
 
-
-.priority2:hover{
+.priority2:hover {
   background-color: orange;
 }
-.priority3:hover{
+.priority3:hover {
   background-color: red;
+}
+
+div > form {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid grey;
+}
+
+div > form > * {
+  box-sizing: border-box;
+  width: 100%;
+}
+div > form > input:hover {
+  background-color: #0d1218;
 }
