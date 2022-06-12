@@ -6,7 +6,7 @@ html {
   margin: auto;
   line-height: 1.5rem;
   font-size: 24px;
-  height: 100%;  
+  height: 100%;
   overflow: hidden;
   background-color: #1a222d !important;
 }
@@ -54,4 +54,9 @@ h3 {
 
 label:hover {
   cursor: pointer;
+}
+
+.error {
+  color: red;
+  transition: color 0.3s ease-in-out;
 }

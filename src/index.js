@@ -36,11 +36,9 @@ window.onload = () => {
     }
     rebuildObjs();
     showProjects();
-    addProjectListener();
   } else {
     defaultItems();
     showProjects();
-    addProjectListener();
   }
 };
 
@@ -78,6 +76,7 @@ function showProjects() {
   }
   showTasksListener();
   addTaskListener();
+  addProjectListener();
   deleteProjectListener();
 }
 
@@ -117,7 +116,6 @@ function addProjectListener() {
             projectList.splice(0, 1);
           projectList.push(newProject);
           showProjects();
-          addProjectListener();
           refreshCache();
         } else {
           alert("bad input");
@@ -128,23 +126,43 @@ function addProjectListener() {
 }
 
 //showTasks event listener
+//NOTE; a is a placeholder ++ I can derive all the callbacks to another .js file to cleanup the code
 function showTasksListener() {
   document.querySelectorAll("#showTask").forEach((el) => {
-    el.addEventListener("click", function (e) {
+    el.addEventListener("click", function a(e) {
       // console.log(e.target.parentNode);
       let eventClass = e.target.parentNode.classList[0];
       let eventIndex = eventClass[eventClass.length - 1];
       let taskListSelector = document.querySelector(`#taskList${eventIndex}`);
+      let showTaskButton = document.querySelector(
+        `.project${eventIndex}>#showTask`
+      );
       // console.log(eventIndex);
       //if tasks are already shown, hide them
-      if (taskListSelector.innerHTML == "") {
+      if (
+        projectList[eventIndex].getTasks().length != 0 &&
+        taskListSelector.innerHTML == ""
+      ) {
         console.log(projectList[eventIndex].getTasks());
-        document.querySelector(`.project${eventIndex}>#showTask`).innerHTML =
-          "Hide tasks";
+        showTaskButton.innerHTML = "Hide tasks";
         showTasks(eventIndex, taskListSelector);
+      } else if (
+        projectList[eventIndex].getTasks().length == 0 &&
+        taskListSelector.innerHTML == ""
+      ) {
+        //if no tasks are added, show an error through the button
+        showTaskButton.innerHTML = "No tasks yet!";
+        document
+          .querySelector(`.project${eventIndex}>#showTask`)
+          .classList.add("error");
+        setTimeout(() => {
+          showTaskButton.innerHTML = "Show tasks";
+          document
+            .querySelector(`.project${eventIndex}>#showTask`)
+            .classList.remove("error");
+        }, 1500);
       } else {
-        document.querySelector(`.project${eventIndex}>#showTask`).innerHTML =
-          "Show tasks";
+        showTaskButton.innerHTML = "Show tasks";
         taskListSelector.innerHTML = "";
       }
     });
@@ -168,13 +186,12 @@ function deleteProjectListener() {
         showProjects();
         refreshCache();
       } else {
-        showProjects();
+        return;
       }
     });
   });
 }
 
-//ahora mismo, el botón de showtasks reemplaza al botón de add task (porque cambia el html), además, falta la lógica que añada la task al project
 function addTaskListener() {
   document.querySelectorAll("#addTask").forEach((el) => {
     el.addEventListener("click", function (e) {
