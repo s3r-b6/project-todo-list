@@ -1,4 +1,5 @@
 import { todoProject, todoItem } from "./app.js";
+import "./styles.css";
 let projectList = [];
 
 window.onload = () => {
